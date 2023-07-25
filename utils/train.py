@@ -151,6 +151,8 @@ def run(
     patience(=4): stop if the number of consecutive rise in validation loss exceeds patience
     """
 
+    # __import__('ipdb').set_trace()
+
     # model
     torch.cuda.empty_cache()
 

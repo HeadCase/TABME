@@ -1,10 +1,11 @@
 #!/bin/bash
 
-echo make a copy of raw data
-cp -r ./data/raw ./data/preprocessed
+# echo make a copy of raw data
+cp -vr ./data/raw ./data/preprocessed
 
 echo resize pdfs and remove id information
 find ./data/preprocessed -name "*.pdf" -exec sh -c "convert -density 150 '{}' -colorspace Gray -resize 1025x1025 -gravity NorthWest -shave 25x25 '{}' || { echo {} will be deleted; rm {}; }" \;
+# fd -e pdf --full-path 'data/preprocessed' -x convert -verbose -density 150 {} -colorspace Gray -resize 1025x1025 -gravity NorthWest -shave 25x25 {}
 
 # echo filter pdfs with more than 20 pages
 # function len_pdf() {
@@ -44,6 +45,14 @@ echo convert pdfs to jpg folders
 while read -r pdf_path; do
 	pdf_name=$(basename "$pdf_path")
 	pdf_name="${pdf_name%.*}"
+	mkdir -p ./data/test/"$pdf_name"
+	convert -density 150 "$pdf_path" -resize 1000x1000 "./data/test/$pdf_name/$pdf_name.jpg"
+	rm "$pdf_path"
+done < <(find ./data/test -name "*.pdf")
+
+while read -r pdf_path; do
+	pdf_name=$(basename "$pdf_path")
+	pdf_name="${pdf_name%.*}"
 	mkdir -p ./data/train/"$pdf_name"
 	convert -density 150 "$pdf_path" -resize 1000x1000 "./data/train/$pdf_name/$pdf_name.jpg"
 	rm "$pdf_path"
@@ -57,35 +66,33 @@ while read -r pdf_path; do
 	rm "$pdf_path"
 done < <(find ./data/val -name "*.pdf")
 
-while read -r pdf_path; do
-	pdf_name=$(basename "$pdf_path")
-	pdf_name="${pdf_name%.*}"
-	mkdir -p ./data/test/"$pdf_name"
-	convert -density 150 "$pdf_path" -resize 1000x1000 "./data/test/$pdf_name/$pdf_name.jpg"
-	rm "$pdf_path"
-done < <(find ./data/test -name "*.pdf")
-
-echo get OCR using tesseract
+echo get test OCR using tesseract
 export filter="./data/ocr_filter.awk"
-while read -r pdf_path; do
-	pdf_name="${pdf_path%.*}"
-	tesseract -l eng --dpi 300 "$pdf_path" stdout tsv 2>/dev/null | $filter >"$pdf_name.tsv"
-done < <(find ./data/train -name "*.jpg")
-
-while read -r pdf_path; do
-	pdf_name="${pdf_path%.*}"
-	tesseract -l eng --dpi 300 "$pdf_path" stdout tsv 2>/dev/null | $filter >"$pdf_name.tsv"
-done < <(find ./data/val -name "*.jpg")
-
 while read -r pdf_path; do
 	pdf_name="${pdf_path%.*}"
 	tesseract -l eng --dpi 300 "$pdf_path" stdout tsv 2>/dev/null | $filter >"$pdf_name.tsv"
 done < <(find ./data/test -name "*.jpg")
 
-echo generate virtual folders
-python data/sample_folders.py ./data/train 11 100000 >./data/train_folders.txt
-python data/sample_folders.py ./data/val 11 5000 >./data/val_folders.txt
-python data/sample_folders.py ./data/test 11 5000 >./data/test_folders.txt
+echo generate test virtual folders
+python data/sample_folders.py ./data/test 11 25 >./data/test_folders.txt
 
-echo clean up
-rm -r ./data/preprocessed
+echo get train OCR using tesseract
+while read -r pdf_path; do
+	pdf_name="${pdf_path%.*}"
+	tesseract -l eng --dpi 300 "$pdf_path" stdout tsv 2>/dev/null | $filter >"$pdf_name.tsv"
+done < <(find ./data/train -name "*.jpg")
+
+echo generate train virtual folders
+python data/sample_folders.py ./data/train 11 120 >./data/train_folders.txt
+
+echo get validation OCR using tesseract
+while read -r pdf_path; do
+	pdf_name="${pdf_path%.*}"
+	tesseract -l eng --dpi 300 "$pdf_path" stdout tsv 2>/dev/null | $filter >"$pdf_name.tsv"
+done < <(find ./data/val -name "*.jpg")
+
+echo generate validation virtual folders
+python data/sample_folders.py ./data/val 11 25 >./data/val_folders.txt
+
+# echo clean up
+# rm -r ./data/preprocessed

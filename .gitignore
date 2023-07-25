@@ -2,6 +2,9 @@
 data/train
 data/val
 data/test
+data/raw
+data/preprocessed
+data/aldo
 data/tobacco800
 .idea
 .DS_Store

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from pathlib import Path
 
@@ -45,7 +47,8 @@ if __name__ == '__main__':
         '--ablation',
         type=str,
         required=False,
-        help="optional, specify ablation choose from 'resnet' or 'layoutlm', default: no ablation",
+        help="optional, specify ablation choose from 'resnet' or 'layoutlm',"
+        " default: no ablation",
     )
     parser.add_argument(
         '-n',
