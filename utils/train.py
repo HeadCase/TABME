@@ -130,6 +130,9 @@ def evaluate(model, dataloader, criterion):
     loss, f1 = running_loss / len(dataloader), running_f1 / len(dataloader)
     model.validation_loss = loss
     model.validation_f1 = f1
+
+    torch.cuda.empty_cache()
+
     return loss, f1
 
 
@@ -150,8 +153,6 @@ def run(
     frac_stagnant(=0.02): stop if the new val loss is within (1+-frac_stagnant)*previous val loss
     patience(=4): stop if the number of consecutive rise in validation loss exceeds patience
     """
-
-    # __import__('ipdb').set_trace()
 
     # model
     torch.cuda.empty_cache()

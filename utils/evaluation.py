@@ -265,8 +265,6 @@ def predict(
     model = model.to(device)
     model.eval()
 
-    # __import__('ipdb').set_trace()
-
     for folder_id in tqdm(
         df.folder_id.unique(), desc='Generating predictions'
     ):
@@ -287,8 +285,6 @@ def predict(
         all_labels = []
         all_logits = []
         all_stems = []
-
-        # __import__('ipdb').set_trace()
 
         for dataset in dataloader:
 
