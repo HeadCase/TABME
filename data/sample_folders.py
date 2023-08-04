@@ -1,20 +1,53 @@
 #!/usr/bin/env python
-import os
-import sys
-from glob import glob
+import random
+from collections import defaultdict
+from copy import deepcopy
+from pathlib import Path
 
+import click
 import numpy as np
 
+
+@click.command()
+@click.option(
+    '--lambda_val',
+    '-l',
+    type=int,
+    default=11,
+    required=True,
+    help='lambda value for Poisson sampling distribution',
+)
+@click.option(
+    '--num_samples',
+    '-n',
+    type=int,
+    required=True,
+    help='Number of total documents to sample when building bundles',
+)
+@click.argument('docs')
+def cli(docs, num_samples, lambda_val):
+    paths = []
+    bundles = defaultdict(list)
+    for path in Path(docs).glob('*'):
+        paths.append(str(path).split('/')[-1])
+
+    rng = np.random.default_rng()
+    expend_paths = deepcopy(paths)
+
+    while expend_paths:
+        random.shuffle(expend_paths)
+        bundles[random.randint(1, num_samples)].append(expend_paths.pop())
+
+    for i, n in enumerate(rng.poisson(lambda_val, num_samples)):
+        for name in rng.choice(paths, n):
+            bundles[i + 1].append(name)
+
+    counter = 1
+    for v in bundles.values():
+        for stem in v:
+            print(stem, counter)
+        counter += 1
+
+
 if __name__ == '__main__':
-    path_list = sys.argv[1]
-    lam = int(sys.argv[2])
-    samples = int(sys.argv[3])
-
-    names = []
-    for name in glob(f'{path_list}/*'):
-        name = name.split('/')[-1]
-        names.append(name)
-
-    for i, n in enumerate(np.random.poisson(lam, samples)):
-        for name in np.random.choice(names, n):
-            print(name, i + 1)
+    cli()
