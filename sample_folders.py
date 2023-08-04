@@ -7,6 +7,8 @@ from pathlib import Path
 import click
 import numpy as np
 
+DATA_PATH = Path(Path(__file__).parents[1] / 'data/')
+
 
 @click.command()
 @click.option(
@@ -28,7 +30,7 @@ import numpy as np
 def cli(docs, num_samples, lambda_val):
     paths = []
     bundles = defaultdict(list)
-    for path in Path(docs).glob('*'):
+    for path in DATA_PATH.glob('*'):
         paths.append(str(path).split('/')[-1])
 
     rng = np.random.default_rng()
