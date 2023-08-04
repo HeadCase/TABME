@@ -1,4 +1,5 @@
 **/_*
+cache/
 data/train
 data/val
 data/test
