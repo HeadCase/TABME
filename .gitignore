@@ -7,6 +7,7 @@ data/raw
 data/preprocessed
 data/aldo
 data/tobacco800
+models/
 .idea
 .DS_Store
 .ipynb_checkpoints
